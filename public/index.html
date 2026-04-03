@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyStart — Python pour débutants</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐍</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="logo" id="logo">🐍 <span>PyStart</span></div>
+    <div class="stats-bar">
+      <div class="stat">⚡ <span class="xp-val" id="xp-display">0 XP</span></div>
+      <div class="stat">🔥 <span class="streak-val" id="streak-display">0 jours</span></div>
+      <div class="stat">📚 <span class="progress-val" id="progress-display">0/300</span></div>
+      <button type="button" class="chip" id="user-chip" style="display:none"></button>
+      <button type="button" class="btn-ghost" id="btn-auth">Connexion</button>
+      <button type="button" class="btn-ghost" id="btn-logout" style="display:none">Déconnexion</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Carte -->
+    <section class="view active" id="view-map">
+      <div class="map-header">
+        <h1>🗺️ Parcours Python</h1>
+        <p>9 modules · 300 exercices · QCM, vrai/faux, code et erreurs</p>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="global-bar" style="width:0%"></div></div>
+        <div class="map-actions">
+          <button type="button" class="toggle-revision" id="revision-toggle">Mode révision</button>
+        </div>
+      </div>
+      <div class="islands-grid" id="islands-grid"></div>
+    </section>
+
+    <!-- Liste exercices d’un niveau -->
+    <section class="view" id="view-module">
+      <div class="module-topbar">
+        <button type="button" class="back-btn" id="map-back">← Carte</button>
+        <div class="topbar-info">
+          <h2 id="mod-title">Module</h2>
+          <p id="mod-subtitle"></p>
+        </div>
+      </div>
+      <div class="lessons-list" id="lessons-list"></div>
+    </section>
+
+    <!-- Exercice -->
+    <section class="view" id="view-exercise">
+      <div class="module-topbar">
+        <button type="button" class="back-btn" id="ex-back">← Liste</button>
+        <div class="topbar-info">
+          <h2 id="ex-title">Exercice</h2>
+          <p id="ex-level"></p>
+        </div>
+      </div>
+      <div class="exercise-page">
+        <div class="concept-box" id="ex-analogy"></div>
+        <div id="ex-visual"></div>
+        <div id="ex-animation"></div>
+        <div class="exercise-task" id="ex-prompt"></div>
+        <div id="ex-interaction" class="ex-interaction"></div>
+        <div id="ex-feedback" class="feedback-banner"></div>
+        <div id="ex-actions" class="ex-actions"></div>
+      </div>
+    </section>
+
+    <!-- Auth -->
+    <section class="view" id="view-auth">
+      <div class="auth-wrap">
+        <div id="auth-panel-login" class="auth-panel">
+          <h2>Connexion</h2>
+          <form id="form-login">
+            <label>Email<input type="email" name="email" required autocomplete="username"></label>
+            <label>Mot de passe<input type="password" name="password" required autocomplete="current-password"></label>
+            <button type="submit" class="next-btn">Se connecter</button>
+          </form>
+          <p class="auth-links">
+            <a href="#/register" id="link-register">Créer un compte</a>
+          </p>
+        </div>
+        <div id="auth-panel-register" class="auth-panel" style="display:none">
+          <h2>Inscription</h2>
+          <form id="form-register">
+            <label>Email<input type="email" name="email" required></label>
+            <label>Pseudo (3–30, lettres, chiffres, _)<input type="text" name="username" required minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+"></label>
+            <label>Mot de passe (min. 8)<input type="password" name="password" required minlength="8"></label>
+            <label>Confirmation<input type="password" name="passwordConfirm" required minlength="8"></label>
+            <button type="submit" class="next-btn">S’inscrire</button>
+          </form>
+          <p class="auth-links"><a href="#/login" id="link-login">Déjà un compte ?</a></p>
+        </div>
+        <p class="auth-msg" id="auth-msg"></p>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section class="view" id="view-dashboard">
+      <div class="dashboard">
+        <h2>Tableau de bord</h2>
+        <p class="dash-line"><strong id="dash-user"></strong> · <span id="dash-email"></span></p>
+        <div class="dash-stats">
+          <div class="dash-card"><span>XP</span><strong id="dash-xp">0</strong></div>
+          <div class="dash-card"><span>Niveau</span><strong id="dash-level">1</strong></div>
+          <div class="dash-card"><span>Série</span><strong id="dash-streak">0</strong> jours</div>
+        </div>
+        <h3>Badges</h3>
+        <div class="dash-badges" id="dash-badges"></div>
+        <button type="button" class="next-btn dash-cta" id="dash-continue">Continuer le parcours</button>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
