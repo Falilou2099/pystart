@@ -23,7 +23,7 @@ cp .env.example .env
 
 Renseigne au minimum dans `.env` :
 
-- `DATABASE_URL` — chaîne de connexion Neon
+- `DATABASE_URL` — chaîne de connexion Neon (le serveur enlève `channel_binding=require` si présent : incompatible avec `pg` sur Vercel)
 - `JWT_SECRET` — chaîne longue et aléatoire (≥ 32 caractères en production)
 - `JWT_REFRESH_SECRET` — autre secret pour les refresh tokens
 - `CSRF_SECRET` — secret pour les jetons CSRF (peut être identique à `JWT_SECRET` en dev)

@@ -601,7 +601,7 @@
   }
 
   async function route() {
-    const { path, params } = parseHash();
+    const { path } = parseHash();
     updateTopbar();
     if (path === '/login') {
       showView('auth');
@@ -623,12 +623,17 @@
       showView('dashboard');
       return;
     }
+    // Accueil : parcours seulement si connecté, sinon on renvoie vers la connexion
+    if (path === '/' && !state.user) {
+      location.replace('#/login');
+      return;
+    }
     showView('map');
     renderMap();
   }
 
   el('logo').onclick = () => {
-    location.hash = '#/';
+    location.hash = state.user ? '#/' : '#/login';
     route();
   };
   el('revision-toggle').onclick = () => {
@@ -636,7 +641,7 @@
     renderMap();
   };
   el('map-back').onclick = () => {
-    location.hash = '#/';
+    location.hash = state.user ? '#/' : '#/login';
     route();
   };
 
@@ -651,6 +656,13 @@
     await loadExercises();
     await refreshUser();
     if (state.user) await loadProgress();
+    const h = location.hash;
+    if (
+      !state.user &&
+      (h === '' || h === '#' || h === '#/' || h === '#/index.html')
+    ) {
+      location.replace('#/login');
+    }
     bindAuth();
     route();
   }
