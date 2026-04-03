@@ -1,18 +1,44 @@
-/* global PyApi */
+/* global PyApi, I18n */
 (function () {
   const TOTAL_EX = 300;
-  const MODULE_NAMES = [
-    'Premier contact',
-    'Variables & types',
-    'Conditions',
-    'Boucles',
-    'Listes & tuples',
-    'Fonctions',
-    'Dictionnaires & ensembles',
-    'Fichiers & modules',
-    'Projets & synthèse',
-  ];
   const MODULE_EMOJI = ['👋', '📦', '🔀', '🔄', '📋', '🧩', '📖', '📁', '🚀'];
+
+  function t(k) {
+    return I18n.t(k);
+  }
+
+  function localizeApiError(msg) {
+    if (!msg || I18n.getLang() !== 'en') return msg;
+    const m = {
+      'Compte créé. Tu peux te connecter tout de suite.':
+        'Account created. You can sign in now.',
+      Identifiants incorrects: 'Invalid email or password.',
+      'Non connecté': 'Not signed in.',
+      'Email ou pseudo déjà utilisé': 'Email or username already taken.',
+      'Jeton CSRF invalide ou manquant': 'Invalid or missing CSRF token.',
+      'Session expirée ou invalide': 'Session expired or invalid.',
+    };
+    return m[msg] || msg;
+  }
+
+  function exercisesLangQuery() {
+    return '?lang=' + (I18n.getLang() === 'en' ? 'en' : 'fr');
+  }
+
+  async function onLanguageChanged() {
+    I18n.applyDom();
+    I18n.updateLangButton(el('btn-lang'));
+    I18n.syncDocument();
+    await loadExercises();
+    updateTopbar();
+    const av = document.querySelector('.main .view.active');
+    if (!av) return;
+    if (av.id === 'view-map') renderMap();
+    else if (av.id === 'view-module') openModule(state.currentModule || 1);
+    else if (av.id === 'view-exercise' && state.currentExId) await openExercise(state.currentExId);
+    else if (av.id === 'view-exercise') renderExercise();
+    else if (av.id === 'view-dashboard' && state.user) renderDashboard();
+  }
 
   const state = {
     user: null,
@@ -95,7 +121,7 @@
   }
 
   async function loadExercises() {
-    const r = await fetch('/api/exercises');
+    const r = await fetch('/api/exercises' + exercisesLangQuery());
     const j = await r.json();
     state.exercises = j.exercises || [];
   }
@@ -138,8 +164,8 @@
   }
 
   function updateTopbar() {
-    el('xp-display').textContent = xpDisplay() + ' XP';
-    el('streak-display').textContent = streakDisplay() + ' jours';
+    el('xp-display').textContent = xpDisplay() + t('xp_suffix');
+    el('streak-display').textContent = streakDisplay() + t('days_suffix');
     el('progress-display').textContent = completedCount() + '/' + TOTAL_EX;
     const pct = (completedCount() / TOTAL_EX) * 100;
     el('global-bar').style.width = pct + '%';
@@ -172,9 +198,9 @@
       const nEx = state.exercises.filter((e) => e.module === mod).length;
       card.innerHTML =
         `<span class="island-emoji">${emoji}</span>` +
-        `<div class="island-num">Module ${mod}</div>` +
-        `<div class="island-name">${MODULE_NAMES[mod - 1]}</div>` +
-        `<div class="island-desc">${nEx || '—'} exercices</div>` +
+        `<div class="island-num">${t('module_word')} ${mod}</div>` +
+        `<div class="island-name">${I18n.moduleName(mod - 1)}</div>` +
+        `<div class="island-desc">${nEx || '—'} ${t('exercises_word')}</div>` +
         `<div class="island-progress"><div class="island-bar"><div class="island-bar-fill" style="width:${pct}%"></div></div><span class="island-pct">${pct}%</span></div>` +
         (locked ? '<span class="lock-icon">🔒</span>' : '');
       if (!locked) {
@@ -189,10 +215,8 @@
     state.currentModule = mod;
     const list = el('lessons-list');
     list.innerHTML = '';
-    el('mod-title').textContent = 'Module ' + mod + ' — ' + MODULE_NAMES[mod - 1];
-    el('mod-subtitle').textContent = state.revision
-      ? 'Révision : exercices déjà terminés'
-      : 'Choisis un exercice';
+    el('mod-title').textContent = t('module_word') + ' ' + mod + ' — ' + I18n.moduleName(mod - 1);
+    el('mod-subtitle').textContent = state.revision ? t('revision_subtitle') : t('pick_exercise');
     const exs = state.exercises.filter((e) => e.module === mod);
     exs.forEach((e) => {
       const done = isDone(e.id);
@@ -202,13 +226,12 @@
       row.innerHTML =
         `<span class="lesson-card-icon">${done ? '✅' : '📖'}</span>` +
         `<div class="lesson-card-info"><div class="lesson-card-title">${e.title}</div>` +
-        `<div class="lesson-card-meta">${e.kind.toUpperCase()}</div></div><span class="lesson-card-arrow">→</span>`;
+        `<div class="lesson-card-meta">${I18n.kindLabel(e.kind)}</div></div><span class="lesson-card-arrow">→</span>`;
       row.onclick = () => openExercise(e.id);
       list.appendChild(row);
     });
     if (!list.children.length) {
-      list.innerHTML =
-        '<p class="muted">Aucun exercice à afficher en mode révision pour ce niveau.</p>';
+      list.innerHTML = '<p class="muted">' + t('revision_empty') + '</p>';
     }
     showView('module');
   }
@@ -220,7 +243,7 @@
     state.attemptCount = 0;
     state.revealed = false;
     state.animStep = 0;
-    const r = await fetch('/api/exercises/' + encodeURIComponent(id));
+    const r = await fetch('/api/exercises/' + encodeURIComponent(id) + exercisesLangQuery());
     if (!r.ok) return;
     const j = await r.json();
     state.exerciseDetail = j.exercise;
@@ -232,9 +255,10 @@
     const ex = state.exerciseDetail;
     if (!ex) return;
     el('ex-title').textContent = ex.title;
-    el('ex-level').textContent = 'Module ' + ex.module + ' · ' + ex.kind;
+    el('ex-level').textContent =
+      t('module_word') + ' ' + ex.module + ' · ' + I18n.kindLabel(ex.kind);
     el('ex-analogy').innerHTML =
-      '<p><strong>💭 Analogie :</strong> ' + escapeHtml(ex.analogy) + '</p>';
+      '<p><strong>💭 ' + escapeHtml(t('analogy_label')) + '</strong> ' + escapeHtml(ex.analogy) + '</p>';
     el('ex-prompt').innerHTML = '<p>' + escapeHtml(ex.prompt).replace(/\n/g, '<br>') + '</p>';
 
     const viz = el('ex-visual');
@@ -257,8 +281,12 @@
         escapeHtml(st.caption) +
         '</p>' +
         (state.animStep < ex.animationSteps.length - 1
-          ? '<button type="button" class="btn-secondary" id="anim-next">Étape suivante →</button>'
-          : '<button type="button" class="btn-secondary" id="anim-done">Compris !</button>') +
+          ? '<button type="button" class="btn-secondary" id="anim-next">' +
+            escapeHtml(t('anim_next')) +
+            '</button>'
+          : '<button type="button" class="btn-secondary" id="anim-done">' +
+            escapeHtml(t('anim_done')) +
+            '</button>') +
         '</div>';
       const nx = el('anim-next');
       if (nx)
@@ -292,7 +320,7 @@
         box.appendChild(b);
       });
     } else if (ex.kind === 'truefalse') {
-      ['Vrai', 'Faux'].forEach((label, i) => {
+      [t('true_btn'), t('false_btn')].forEach((label, i) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'quiz-opt';
@@ -309,12 +337,12 @@
       inp.type = 'text';
       inp.className = 'text-input';
       inp.id = 'fill-answer';
-      inp.placeholder = 'Ta réponse pour le trou';
+      inp.placeholder = t('ph_fill');
       box.appendChild(inp);
       const sub = document.createElement('button');
       sub.type = 'button';
       sub.className = 'next-btn';
-      sub.textContent = 'Valider';
+      sub.textContent = t('validate');
       sub.onclick = () => answerFill();
       box.appendChild(sub);
     } else if (ex.kind === 'findError') {
@@ -326,20 +354,24 @@
       inp.type = 'text';
       inp.className = 'text-input';
       inp.id = 'fix-answer';
-      inp.placeholder = 'Écris la ligne corrigée';
+      inp.placeholder = t('ph_fix');
       box.appendChild(inp);
       const sub = document.createElement('button');
       sub.type = 'button';
       sub.className = 'next-btn';
-      sub.textContent = 'Valider';
+      sub.textContent = t('validate');
       sub.onclick = () => answerFind();
       box.appendChild(sub);
     }
 
     const actions = el('ex-actions');
     actions.innerHTML =
-      '<button type="button" class="btn-hint" id="hint-btn">💡 Indice (−5 XP)</button>' +
-      '<button type="button" class="back-btn" id="back-mod">← Retour</button>';
+      '<button type="button" class="btn-hint" id="hint-btn">' +
+      escapeHtml(t('hint_btn')) +
+      '</button>' +
+      '<button type="button" class="back-btn" id="back-mod">' +
+      escapeHtml(t('back')) +
+      '</button>';
     el('hint-btn').onclick = showHint;
     el('back-mod').onclick = () => {
       openModule(state.currentModule || 1);
@@ -390,7 +422,7 @@
       });
       if (r.ok) {
         const j = await r.json();
-        if (j.xpGained) showXPPopup('+' + j.xpGained + ' XP');
+        if (j.xpGained) showXPPopup('+' + j.xpGained + t('xp_suffix'));
         await loadProgress();
         await refreshUser();
       }
@@ -402,7 +434,7 @@
         if (score >= 80 && elapsed < 120) add += 5;
         state.guest.xp += add;
         saveGuest();
-        showXPPopup('+' + add + ' XP (local)');
+        showXPPopup('+' + add + t('xp_suffix') + t('xp_local'));
       }
     }
     updateTopbar();
@@ -427,7 +459,10 @@
       showFeedback(true, '✅ ' + ex.explanation);
       await completeExercise(scoreFromAttempts());
     } else {
-      showFeedback(false, '🌱 ' + (ex.encouragementWrong || 'Presque !') + ' — ' + ex.explanation);
+      showFeedback(
+        false,
+        '🌱 ' + (ex.encouragementWrong || t('encourage_mcq')) + ' — ' + ex.explanation
+      );
     }
   }
 
@@ -441,7 +476,10 @@
       showFeedback(true, '✅ ' + ex.explanation);
       await completeExercise(scoreFromAttempts());
     } else {
-      showFeedback(false, '🌱 ' + (ex.encouragementWrong || 'Belle tentative !') + ' — ' + ex.explanation);
+      showFeedback(
+        false,
+        '🌱 ' + (ex.encouragementWrong || t('encourage_tf')) + ' — ' + ex.explanation
+      );
     }
   }
 
@@ -458,7 +496,10 @@
       showFeedback(true, '✅ ' + ex.explanation);
       await completeExercise(scoreFromAttempts());
     } else {
-      showFeedback(false, '🌱 ' + (ex.encouragementWrong || 'Encore un effort !') + ' — ' + ex.explanation);
+      showFeedback(
+        false,
+        '🌱 ' + (ex.encouragementWrong || t('encourage_fill')) + ' — ' + ex.explanation
+      );
     }
   }
 
@@ -473,7 +514,10 @@
       showFeedback(true, '✅ ' + ex.explanation);
       await completeExercise(scoreFromAttempts());
     } else {
-      showFeedback(false, '🌱 ' + (ex.encouragementWrong || 'Tu y es presque !') + ' — ' + ex.explanation);
+      showFeedback(
+        false,
+        '🌱 ' + (ex.encouragementWrong || t('encourage_find')) + ' — ' + ex.explanation
+      );
     }
   }
 
@@ -482,7 +526,7 @@
     if (!ex || !ex.hints || !ex.hints.length) return;
     state.hintsUsed = true;
     const h = ex.hints[Math.floor(Math.random() * ex.hints.length)];
-    showFeedback(false, '💡 Indice : ' + h);
+    showFeedback(false, '💡 ' + t('hint_prefix') + h);
   }
 
   function bindAuth() {
@@ -507,7 +551,7 @@
       const r = await PyApi.api('/api/auth/login', { method: 'POST', body });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) {
-        el('auth-msg').textContent = j.error || 'Erreur';
+        el('auth-msg').textContent = localizeApiError(j.error) || t('error_generic');
         return;
       }
       await refreshUser();
@@ -529,8 +573,10 @@
       const r = await PyApi.api('/api/auth/register', { method: 'POST', body });
       const j = await r.json().catch(() => ({}));
       el('auth-msg').textContent = r.ok
-        ? j.message || 'OK'
-        : j.error || (j.errors && j.errors[0] && j.errors[0].msg) || 'Erreur';
+        ? localizeApiError(j.message) || t('ok_generic')
+        : localizeApiError(j.error) ||
+          (j.errors && j.errors[0] && j.errors[0].msg) ||
+          t('error_generic');
       if (r.ok) {
         e.target.reset();
       }
@@ -558,6 +604,10 @@
       location.hash = '#/';
       route();
     };
+    el('btn-lang').onclick = async () => {
+      I18n.toggleLang();
+      await onLanguageChanged();
+    };
   }
 
   function renderDashboard() {
@@ -573,27 +623,27 @@
     el('dash-streak').textContent = state.user.streakDays ?? state.user.streak_days;
     const badges = state.user.badges || [];
     const meta = {
-      first_step: ['👣', 'Premier pas'],
-      mod1_done: ['👋', 'Module 1'],
-      mod2_done: ['📦', 'Module 2'],
-      mod3_done: ['🔀', 'Module 3'],
-      mod4_done: ['🔄', 'Module 4'],
-      mod5_done: ['📋', 'Module 5'],
-      mod6_done: ['🧩', 'Module 6'],
-      mod7_done: ['📖', 'Module 7'],
-      mod8_done: ['📁', 'Module 8'],
-      mod9_done: ['🚀', 'Parcours complet'],
+      first_step: '👣',
+      mod1_done: '👋',
+      mod2_done: '📦',
+      mod3_done: '🔀',
+      mod4_done: '🔄',
+      mod5_done: '📋',
+      mod6_done: '🧩',
+      mod7_done: '📖',
+      mod8_done: '📁',
+      mod9_done: '🚀',
     };
     el('dash-badges').innerHTML = Object.entries(meta)
-      .map(([id, arr]) => {
+      .map(([id, emoji]) => {
         const on = badges.includes(id);
         return (
           '<div class="badge-pill ' +
           (on ? '' : 'locked') +
           '">' +
-          arr[0] +
+          emoji +
           ' ' +
-          arr[1] +
+          I18n.badgeName(id) +
           '</div>'
         );
       })
@@ -664,6 +714,9 @@
       location.replace('#/login');
     }
     bindAuth();
+    I18n.applyDom();
+    I18n.updateLangButton(el('btn-lang'));
+    I18n.syncDocument();
     route();
   }
 

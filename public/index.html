@@ -19,43 +19,41 @@
       <div class="stat">🔥 <span class="streak-val" id="streak-display">0 jours</span></div>
       <div class="stat">📚 <span class="progress-val" id="progress-display">0/300</span></div>
       <button type="button" class="chip" id="user-chip" style="display:none"></button>
-      <button type="button" class="btn-ghost" id="btn-auth">Connexion</button>
-      <button type="button" class="btn-ghost" id="btn-logout" style="display:none">Déconnexion</button>
+      <button type="button" class="btn-ghost" id="btn-lang" title="Switch language">English</button>
+      <button type="button" class="btn-ghost" id="btn-auth" data-i18n="btn_login">Connexion</button>
+      <button type="button" class="btn-ghost" id="btn-logout" style="display:none" data-i18n="btn_logout">Déconnexion</button>
     </div>
   </header>
 
   <main class="main">
-    <!-- Carte -->
     <section class="view active" id="view-map">
       <div class="map-header">
-        <h1>🗺️ Parcours Python</h1>
-        <p>9 modules · 300 exercices · QCM, vrai/faux, code et erreurs</p>
+        <h1 data-i18n="map_title">🗺️ Parcours Python</h1>
+        <p data-i18n="map_subtitle">9 modules · 300 exercices · QCM, vrai/faux, code et erreurs</p>
         <div class="progress-bar-wrap"><div class="progress-bar-fill" id="global-bar" style="width:0%"></div></div>
         <div class="map-actions">
-          <button type="button" class="toggle-revision" id="revision-toggle">Mode révision</button>
+          <button type="button" class="toggle-revision" id="revision-toggle" data-i18n="revision_mode">Mode révision</button>
         </div>
       </div>
       <div class="islands-grid" id="islands-grid"></div>
     </section>
 
-    <!-- Liste exercices d’un niveau -->
     <section class="view" id="view-module">
       <div class="module-topbar">
-        <button type="button" class="back-btn" id="map-back">← Carte</button>
+        <button type="button" class="back-btn" id="map-back" data-i18n="back_map">← Carte</button>
         <div class="topbar-info">
-          <h2 id="mod-title">Module</h2>
+          <h2 id="mod-title" data-i18n="mod_title_default">Module</h2>
           <p id="mod-subtitle"></p>
         </div>
       </div>
       <div class="lessons-list" id="lessons-list"></div>
     </section>
 
-    <!-- Exercice -->
     <section class="view" id="view-exercise">
       <div class="module-topbar">
-        <button type="button" class="back-btn" id="ex-back">← Liste</button>
+        <button type="button" class="back-btn" id="ex-back" data-i18n="back_list">← Liste</button>
         <div class="topbar-info">
-          <h2 id="ex-title">Exercice</h2>
+          <h2 id="ex-title" data-i18n="ex_default">Exercice</h2>
           <p id="ex-level"></p>
         </div>
       </div>
@@ -70,53 +68,52 @@
       </div>
     </section>
 
-    <!-- Auth -->
     <section class="view" id="view-auth">
       <div class="auth-wrap">
         <div id="auth-panel-login" class="auth-panel">
-          <h2>Connexion</h2>
+          <h2 data-i18n="login_title">Connexion</h2>
           <form id="form-login">
-            <label>Email<input type="email" name="email" required autocomplete="username"></label>
-            <label>Mot de passe<input type="password" name="password" required autocomplete="current-password"></label>
-            <button type="submit" class="next-btn">Se connecter</button>
+            <label><span data-i18n="login_email">Email</span><input type="email" name="email" required autocomplete="username"></label>
+            <label><span data-i18n="login_password">Mot de passe</span><input type="password" name="password" required autocomplete="current-password"></label>
+            <button type="submit" class="next-btn" data-i18n="login_submit">Se connecter</button>
           </form>
           <p class="auth-links">
-            <a href="#/register" id="link-register">Créer un compte</a>
+            <a href="#/register" id="link-register" data-i18n="link_register">Créer un compte</a>
           </p>
         </div>
         <div id="auth-panel-register" class="auth-panel" style="display:none">
-          <h2>Inscription</h2>
+          <h2 data-i18n="register_title">Inscription</h2>
           <form id="form-register">
-            <label>Email<input type="email" name="email" required></label>
-            <label>Pseudo (3–30, lettres, chiffres, _)<input type="text" name="username" required minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+"></label>
-            <label>Mot de passe (min. 8)<input type="password" name="password" required minlength="8"></label>
-            <label>Confirmation<input type="password" name="passwordConfirm" required minlength="8"></label>
-            <button type="submit" class="next-btn">S’inscrire</button>
+            <label><span data-i18n="login_email">Email</span><input type="email" name="email" required></label>
+            <label><span data-i18n="register_username">Pseudo (3–30, lettres, chiffres, _)</span><input type="text" name="username" required minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+"></label>
+            <label><span data-i18n="register_password">Mot de passe (min. 8)</span><input type="password" name="password" required minlength="8"></label>
+            <label><span data-i18n="register_confirm">Confirmation</span><input type="password" name="passwordConfirm" required minlength="8"></label>
+            <button type="submit" class="next-btn" data-i18n="register_submit">S'inscrire</button>
           </form>
-          <p class="auth-links"><a href="#/login" id="link-login">Déjà un compte ?</a></p>
+          <p class="auth-links"><a href="#/login" id="link-login" data-i18n="link_has_account">Déjà un compte ?</a></p>
         </div>
         <p class="auth-msg" id="auth-msg"></p>
       </div>
     </section>
 
-    <!-- Dashboard -->
     <section class="view" id="view-dashboard">
       <div class="dashboard">
-        <h2>Tableau de bord</h2>
+        <h2 data-i18n="dash_title">Tableau de bord</h2>
         <p class="dash-line"><strong id="dash-user"></strong> · <span id="dash-email"></span></p>
         <div class="dash-stats">
-          <div class="dash-card"><span>XP</span><strong id="dash-xp">0</strong></div>
-          <div class="dash-card"><span>Niveau</span><strong id="dash-level">1</strong></div>
-          <div class="dash-card"><span>Série</span><strong id="dash-streak">0</strong> jours</div>
+          <div class="dash-card"><span data-i18n="dash_xp_label">XP</span><strong id="dash-xp">0</strong></div>
+          <div class="dash-card"><span data-i18n="dash_level_label">Niveau</span><strong id="dash-level">1</strong></div>
+          <div class="dash-card"><span data-i18n="dash_streak_label">Série</span><strong id="dash-streak">0</strong> <span data-i18n="dash_days">jours</span></div>
         </div>
-        <h3>Badges</h3>
+        <h3 data-i18n="dash_badges">Badges</h3>
         <div class="dash-badges" id="dash-badges"></div>
-        <button type="button" class="next-btn dash-cta" id="dash-continue">Continuer le parcours</button>
+        <button type="button" class="next-btn dash-cta" id="dash-continue" data-i18n="dash_continue">Continuer le parcours</button>
       </div>
     </section>
   </main>
 </div>
 <script src="/js/api.js"></script>
+<script src="/js/i18n.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
