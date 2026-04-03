@@ -29,13 +29,22 @@ Renseigne au minimum dans `.env` :
 - `CSRF_SECRET` — secret pour les jetons CSRF (peut être identique à `JWT_SECRET` en dev)
 - `FRONTEND_URL` — URL du front (ex. `http://localhost:3000`)
 
-### Créer les tables
+### Créer les tables sur Neon (obligatoire pour login / inscription)
+
+Sans cette étape, les tables `users`, `sessions`, etc. n’existent pas : tu auras une **erreur serveur** à l’inscription ou à la connexion.
+
+1. Vérifie que `.env` contient bien `DATABASE_URL` (chaîne **Connection string** du projet Neon, onglet *Dashboard*).
+2. Depuis la racine du projet :
 
 ```bash
 npm run db:migrate
 ```
 
-Ou exécute le contenu de `schema.sql` dans l’éditeur SQL Neon.
+Tu dois voir plusieurs lignes `OK (1/8) …` puis `Migration terminée`.
+
+**Alternative** : dans la console **SQL Editor** de Neon, colle tout le fichier `schema.sql` et exécute (*Run*).
+
+> Même opération à refaire si tu crées une **nouvelle** base Neon (nouvelle branche / projet).
 
 ## Démarrage local
 
